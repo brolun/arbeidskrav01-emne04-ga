@@ -59,7 +59,7 @@ window.addEventListener("load", () => {
 	}
 });
 
-//DEL 2: Generer fiende
+// ==================== DEL 2: GENERER FIENDE ====================
 
 // Hent HTLM-elementer
 const generateEnemyBtn = document.getElementById("generate-enemy");
@@ -76,46 +76,40 @@ const enemyImgs = [
 ];
 const enemyNames = ["Goblin", "Ork", "Drage"];
 
-// Hjelpefunksjoner for å hente tilfeldig fiende-data
+// Hjelpefunksjoner for å hente ut tilfeldig fiendedata
 const randomInteger = (min, max) =>
 	Math.floor(Math.random() * (max - min + 1)) + min;
 const randomItem = (array) => array[Math.floor(Math.random() * array.length)];
 
-// Funksjon for å genere tilfeldig fiende
-function generateEnemy() {
-	// Hent tilfeldig fiende-data
+// Funksjon for å generere tilfeldig fiende ved trykk på knappen
+generateEnemyBtn.addEventListener("click", () => {
+	// Hent tilfeldig fiendedata
 	const randomImg = randomItem(enemyImgs);
 	const randomName = randomItem(enemyNames);
 	const randomHP = randomInteger(50, 100);
 	const randomAttack = randomInteger(10, 40);
-	// Vis fiende-dataen på siden
+	// Vis fiendedataen i DOM
 	enemyImg.src = randomImg;
 	enemyName.textContent = `Fiende: ${randomName}`;
 	enemyHP.textContent = `HP: ${randomHP}`;
 	enemyAttack.textContent = `Angrepsstyrke: ${randomAttack}`;
-	// Lagre fiende-dataen i localStorage
-	const imageFilename = getImageFilename(randomImg);
-	localStorage.setItem("enemy-img", imageFilename);
+	// Lagre fiendedataen i localStorage
+	localStorage.setItem("enemy-img", randomImg.split("/").pop());
 	localStorage.setItem("enemy-name", randomName);
 	localStorage.setItem("enemy-hp", randomHP);
 	localStorage.setItem("enemy-attack", randomAttack);
-}
+});
 
-// Kjør funksjon ved klikk på knappen
-generateEnemyBtn.addEventListener("click", generateEnemy);
-
-// Hent fiende-data fra localStorage og vis på siden ved oppdatering
+// Funksjon for å vise eventuelt generert fiende etter oppdatering av siden
 window.addEventListener("load", () => {
-	// Sjekk om det finnes lagret fiende-data
-	const savedEnemyImgName = localStorage.getItem("enemy-img");
+	// Sjekk om det finnes lagret fiendedata
+	const savedEnemyImg = localStorage.getItem("enemy-img");
 	const savedEnemyName = localStorage.getItem("enemy-name");
 	const savedEnemyHP = localStorage.getItem("enemy-hp");
 	const savedEnemyAttack = localStorage.getItem("enemy-attack");
 	// Hvis data finnes, oppdater DOM med lagret data
-	if (savedEnemyImgName) {
-		// Gjenopprett full bilde-sti fra lagret filnavn
-		const fullImagePath = `assets/${savedEnemyImgName}.jpg`; // Alle fiende-bildene er .jpg
-		enemyImg.src = fullImagePath; // Vis lagret bilde på siden
+	if (savedEnemyImg) {
+		enemyImg.src = `assets/${savedEnemyImg}`;
 	}
 	if (savedEnemyName) {
 		enemyName.textContent = `Fiende: ${savedEnemyName}`;
