@@ -121,5 +121,116 @@ window.addEventListener("load", () => {
 		enemyAttack.textContent = `Angrepsstyrke: ${savedEnemyAttack}`;
 	}
 });
-//Du skal vise frem helten og fienden. Se HTML-dokumentet for hvordan fremvisningen skal se ut, med tanke på hvilke tagger, hierarki og hvilke klasser de skal ha.
-//Du skal lage den strukturen som vist i HTML, her i Javascript og legge de til i div'en "battle-arena" fra HTML.
+// ==================== DEL 3: SLOSS ====================
+
+// Hent HTML-elementer
+const battleArea = document.getElementById("battle-area");
+const fightBtn = document.getElementById("start-fight");
+const battleResult = document.getElementById("battle-result");
+
+// Hent data fra localStorage og konverter tilbake til tall
+const storedCharacterHP = parseInt(localStorage.getItem("character-hp"));
+const storedCharacterAttack = parseInt(
+	localStorage.getItem("character-attack-damage")
+);
+const storedEnemyHP = parseInt(localStorage.getItem("enemy-hp"));
+const storedEnemyAttack = parseInt(localStorage.getItem("enemy-attack"));
+
+// Hjelpefunktion for utregning av HP etter kampen
+const remainingCharacterHP = storedCharacterHP - storedEnemyAttack;
+const remainingEnemyHP = storedEnemyHP - storedCharacterAttack;
+
+// Hjelpefunksjon for å lage nye HTML-elementer
+function createElement(tag, id, textContent, parent) {
+	const element = document.createElement(tag);
+	element.id = id;
+	if (textContent) element.textContent = textContent;
+	parent.appendChild(element);
+	return element;
+}
+
+// Funksjon for å kjøre en kamp
+fightBtn.addEventListener("click", () => {
+	// Slett eventuelle tidligere motstandere
+	document.getElementById("character-display")?.remove();
+	document.getElementById("enemy-fight-display")?.remove();
+
+	// Lag karakterkort og oppdater DOM med data fra localStorage
+	const characterDisplay = document.createElement("div");
+	characterDisplay.id = "character-display";
+	characterDisplay.classList.add("profile-card");
+	battleArea.insertBefore(characterDisplay, fightBtn);
+	createElement("h2", "char-heading", "Helten", characterDisplay);
+	// Hent karakterbildet
+	const characterImg = document.createElement("img");
+	characterImg.id = "char-img";
+	characterImg.alt = "Profilbilde";
+	const characterImgName = localStorage.getItem("character-profile-img");
+	if (characterImgName) {
+		characterImg.src = `assets/${characterImgName}`;
+	}
+	characterDisplay.appendChild(characterImg);
+	// Hent karakterdata
+	createElement(
+		"p",
+		"char-name",
+		`Navn: ${localStorage.getItem("character-name")}`,
+		characterDisplay
+	);
+	createElement(
+		"p",
+		"char-hp",
+		`HP: ${localStorage.getItem("character-hp")}`,
+		characterDisplay
+	);
+	createElement(
+		"p",
+		"char-attack",
+		`Angrepsstyrke: ${localStorage.getItem("character-attack-damage")}`,
+		characterDisplay
+	);
+
+	// Lag fiendekort og oppdater DOM med data fra localStorage
+	const enemyDisplay = document.createElement("div");
+	enemyDisplay.id = "enemy-fight-display";
+	enemyDisplay.classList.add("profile-card");
+	battleArea.insertBefore(enemyDisplay, fightBtn);
+	createElement("h2", "enemy-heading", "Fiende", enemyDisplay);
+	// Hent fiendebildet
+	const enemyImg = document.createElement("img");
+	enemyImg.id = "enemy-fight-img";
+	enemyImg.alt = "Fiendens profilbilde";
+	const enemyImgName = localStorage.getItem("enemy-img");
+	if (enemyImgName) {
+		enemyImg.src = `assets/${enemyImgName}`;
+	}
+	enemyDisplay.appendChild(enemyImg);
+	// Hent fiendedata
+	createElement(
+		"p",
+		"enemy-fight-name",
+		`Navn: ${localStorage.getItem("enemy-name")}`,
+		enemyDisplay
+	);
+	createElement(
+		"p",
+		"enemy-fight-hp",
+		`HP: ${localStorage.getItem("enemy-hp")}`,
+		enemyDisplay
+	);
+	createElement(
+		"p",
+		"enemy-fight-attack",
+		`Angrepsstyrke: ${localStorage.getItem("enemy-attack")}`,
+		enemyDisplay
+	);
+
+	// Funksjon for å regne ut hvem som vinner
+	if (remainingCharacterHP > remainingEnemyHP) {
+		battleResult.textContent = "Du vant!";
+	} else if (remainingEnemyHP > remainingCharacterHP) {
+		battleResult.textContent = "Du tapte!";
+	} else {
+		battleResult.textContent = "Uavgjort!";
+	}
+});
