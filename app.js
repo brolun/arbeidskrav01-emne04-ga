@@ -1,7 +1,4 @@
-// Hjelpefunksjon for å hente filnavn fra bilde-URL ("hunter" i stedet for "assets/hunter.jpg")
-const getImageFilename = (img) => img.src.split("/").pop().split(".")[0];
-
-// DEL 1: Lag karakter og lagre karakteren i localStorage
+// ==================== DEL 1: LAG KARAKTER ====================
 
 // Hent HTML-elementer
 const characterName = document.getElementById("character-name");
@@ -10,52 +7,46 @@ const attackDamage = document.getElementById("attack-damage");
 const profileImgs = document.querySelectorAll(".profile-img");
 const createCharacterBtn = document.getElementById("create-character");
 
-// Funksjon for å velge et bilde og oppdatere rammefarge
-let selectedImg = null; // Holder valgt bilde
-function selectImage(img) {
-	// Sett rammefargen for alle bilder som angitt i CSS
-	profileImgs.forEach((img) => (img.style.borderColor = "#6a4e1e"));
-	// Sett ny rammefarge for valgt bilde
-	img.style.borderColor = "#ffd700";
-	selectedImg = img;
-}
-
-// Kjør funksjon ved klikk på bilde
+// Funksjon for å synliggjøre valgt bilde med ny rammefarge
+let selectedImg = null; // Variabel for å kunne endre valgt bilde
 profileImgs.forEach((img) =>
-	img.addEventListener("click", () => selectImage(img))
+	img.addEventListener("click", () => {
+		// Gi alle bilder samme rammefarge som bestemt i CSS
+		profileImgs.forEach((img) => (img.style.borderColor = "#6a4e1e"));
+		// Gi valgt bilde ny rammefarge
+		img.style.borderColor = "#ffd700";
+		selectedImg = img;
+	})
 );
 
-// Funksjon for å lagre data i localStorage
-function saveCharacterData() {
-	// Lagre karakterdata i localStorage
+// Funksjon for å lagre data i localStorage ved trykk på knappen
+createCharacterBtn.addEventListener("click", () => {
+	// Lagre karakterdata fra input-felter
 	localStorage.setItem("character-name", characterName.value);
 	localStorage.setItem("character-hp", characterHP.value);
 	localStorage.setItem("character-attack-damage", attackDamage.value);
-	// Lagre valgt bilde i localStorage, hvis det finnes
+	// Lagre valgt bilde og overskriv eventuelt tidligere valgt bilde
 	if (selectedImg) {
 		localStorage.setItem(
 			"character-profile-img",
-			getImageFilename(selectedImg)
+			selectedImg.src.split("/").pop()
 		);
 	} else {
 		localStorage.removeItem("character-profile-img");
 	}
-}
+});
 
-// Kjør funksjon ved klikk på knappen
-createCharacterBtn.addEventListener("click", saveCharacterData);
-
-// Behold valgt bilde og rammefarge ved oppdatering av siden
+// Funksjon for å vise valgt bilde etter oppdatering av siden
 window.addEventListener("load", () => {
-	// Hent filnavn for valgt bilde fra localStorage
-	const selectedFilename = localStorage.getItem("character-profile-img");
-	if (selectedFilename) {
-		// Finn bildet med riktig filnavn
+	// Hent info om valgt bilde fra localStorage
+	const selectedImg = localStorage.getItem("character-profile-img");
+	if (selectedImg) {
+		// Finn bilde med riktig filnavn
 		const previouslySelectedImg = [...profileImgs].find(
-			(img) => getImageFilename(img) === selectedFilename
+			(img) => img.src.split("/").pop() === selectedImg
 		);
-		// Hvis bildet finnes, velg det
-		if (previouslySelectedImg) selectImage(previouslySelectedImg);
+		// Vis tidligere valgt bilde
+		if (previouslySelectedImg) previouslySelectedImg.click();
 	}
 });
 
