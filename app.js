@@ -7,8 +7,10 @@ const attackDamage = document.getElementById("attack-damage");
 const profileImgs = document.querySelectorAll(".profile-img");
 const createCharacterBtn = document.getElementById("create-character");
 
+// Tom variabel som brukes i funksjoner for bildevalg
+let selectedImg = null;
+
 // Funksjon for å fremheve valgt bilde med ny rammefarge
-let selectedImg = null; // Variabel for å kunne endre valgt bilde
 function highlightSelectedImage(img) {
 	// Nullstille rammefargen på alle bildene
 	profileImgs.forEach((img) => (img.style.borderColor = "#6a4e1e"));
@@ -23,34 +25,31 @@ function saveCharacterData() {
 	// Lagre data fra input-felter
 	localStorage.setItem("character-name", characterName.value);
 	localStorage.setItem("character-hp", characterHP.value);
-	localStorage.setItem("character-attack-damage", attackDamage.value);
+	localStorage.setItem("character-attack", attackDamage.value);
 	// Lagre filnavnet for valgt bilde
 	if (selectedImg) {
-		localStorage.setItem(
-			"character-profile-img",
-			selectedImg.src.split("/").pop()
-		);
-		//  Overskriv eventuelt tidligere valgt bilde
+		localStorage.setItem("character-img", selectedImg.src.split("/").pop());
 	} else {
-		localStorage.removeItem("character-profile-img");
+		//  Fjern/overskriv eventuelt tidligere valgt bilde
+		localStorage.removeItem("character-img");
 	}
 }
 
 // Funksjon for å vise tidligere valgt bilde
 function restoreSelectedImage() {
 	// Hent info om valgt bilde fra localStorage
-	const selectedImg = localStorage.getItem("character-profile-img");
+	const selectedImg = localStorage.getItem("character-img");
 	if (selectedImg) {
 		// Finn bilde med riktig filnavn
 		const previouslySelectedImg = [...profileImgs].find(
 			(img) => img.src.split("/").pop() === selectedImg
 		);
-		// Vis tidligere valgt bilde
+		// Simuler et klikk på bildet for å fremheve det
 		if (previouslySelectedImg) previouslySelectedImg.click();
 	}
 }
 
-// Fremhev valgt bilde ved trykk på bilde
+// Fremhev valgt bilde ved klikk på bilde
 profileImgs.forEach((img) =>
 	img.addEventListener("click", () => highlightSelectedImage(img))
 );
@@ -81,7 +80,7 @@ const randomInteger = (min, max) =>
 	Math.floor(Math.random() * (max - min + 1)) + min;
 const randomItem = (array) => array[Math.floor(Math.random() * array.length)];
 
-// Funksjon for å generere en tilfeldig fiende
+// Funksjon for å generere tilfeldig fiende
 function generateEnemy() {
 	// Hent ut tilfeldig data
 	const randomImg = randomItem(enemyImgs);
@@ -134,101 +133,121 @@ const battleArea = document.getElementById("battle-area");
 const fightBtn = document.getElementById("start-fight");
 const battleResult = document.getElementById("battle-result");
 
-// Funksjon for å hente data fra localStorage og konvertere til tall
-function getStoredData(key) {
-	return parseInt(localStorage.getItem(key)) || 0;
-}
-
-// Funksjon for å beregne gjenværende HP etter kampen
-function calculateRemainingHP() {
-	return {
-		remainingCharacterHP:
-			getStoredData("character-hp") - getStoredData("enemy-attack"),
-		remainingEnemyHP:
-			getStoredData("enemy-hp") -
-			getStoredData("character-attack-damage"),
-	};
-}
-
-// Funksjon for å lage nye HTML-elementer
-function createElement(tag, id, textContent, parent) {
+// Funksjon for å opprette HTML-elementer
+function createElement(tag, attributes = {}, children = []) {
+	// Opprett nytt HTML-element basert på angitt tag
 	const element = document.createElement(tag);
-	element.id = id;
-	if (textContent) element.textContent = textContent;
-	parent.appendChild(element);
+	// Legg til eventuelle attributter
+	for (const attribute in attributes) {
+		if (attributes[attribute] !== null) {
+			element[attribute] = attributes[attribute];
+		}
+	}
+	// Legg til eventuelle barneelementer (f.eks. <p> inni en <div>)
+	children.forEach((child) => {
+		element.appendChild(child);
+	});
 	return element;
 }
 
-// Funksjon for å opprette kampkort
-function createBattleCard(id, title, imgKey, nameKey, hpKey, attackKey) {
-	// Lag en <div>
-	const display = document.createElement("div");
-	display.id = id;
-	display.classList.add("profile-card");
-	battleArea.insertBefore(display, fightBtn);
-	// Lag en H2
-	createElement("h2", `${id}-heading`, title, display);
-	// Lag en <img> og vis bildet lagret i localStorage
-	const img = document.createElement("img");
-	img.id = `${id}-img`;
-	img.alt = `${title} profilbilde`;
-	const imgName = localStorage.getItem(imgKey);
-	if (imgName) {
-		img.src = `assets/${imgName}`;
-	}
-	display.appendChild(img);
-	// Lag en <p> og vis data lagret i localStorage
-	createElement(
-		"p",
-		`${id}-name`,
-		`Navn: ${localStorage.getItem(nameKey)}`,
-		display
+// Funksjon for å opprette karakterens kampkort
+function createCharacterCard() {
+	const characterCard = createElement(
+		"div",
+		{ id: "character-display", className: "profile-card" },
+		[
+			createElement("h2", { textContent: "Helten" }),
+			createElement("img", {
+				id: "char-img",
+				alt: "Profilbilde",
+				src: `assets/${localStorage.getItem("character-img")}`,
+			}),
+			createElement("p", {
+				id: "char-name",
+				textContent:
+					"Navn: " +
+					`${localStorage.getItem("character-name") || "Ukjent"}`,
+			}),
+			createElement("p", {
+				id: "char-hp",
+				textContent:
+					"HP: " + `${localStorage.getItem("character-hp") || 0}`,
+			}),
+			createElement("p", {
+				id: "char-attack",
+				textContent:
+					"Angrepsstyrke: " +
+					`${localStorage.getItem("character-attack") || 0}`,
+			}),
+		]
 	);
-	createElement(
-		"p",
-		`${id}-hp`,
-		`HP: ${localStorage.getItem(hpKey)}`,
-		display
-	);
-	createElement(
-		"p",
-		`${id}-attack`,
-		`Angrepsstyrke: ${localStorage.getItem(attackKey)}`,
-		display
-	);
+	battleArea.insertBefore(characterCard, fightBtn);
 }
 
-// Funksjon for å kjøre en kamp
-function startBattle() {
-	// Fjern eventuelle tidligere motstandere
-	document.getElementById("character-display")?.remove();
-	document.getElementById("enemy-fight-display")?.remove();
-	// Opprett kampkort for karakter og fiende
-	createBattleCard(
-		"character-display",
-		"Helten",
-		"character-profile-img",
-		"character-name",
-		"character-hp",
-		"character-attack-damage"
+// Funksjon for å opprette fiendens kampkort
+function createEnemyCard() {
+	const enemyCard = createElement(
+		"div",
+		{ id: "enemy-fight-display", className: "profile-card" },
+		[
+			createElement("h2", { textContent: "Fiende" }),
+			createElement("img", {
+				id: "enemy-fight-img",
+				alt: "Fiendens profilbilde",
+				src: `assets/${localStorage.getItem("enemy-img")}`,
+			}),
+			createElement("p", {
+				id: "enemy-fight-name",
+				textContent:
+					"Navn: " +
+					`${localStorage.getItem("enemy-name") || "Ukjent"}`,
+			}),
+			createElement("p", {
+				id: "enemy-fight-hp",
+				textContent:
+					"HP: " + `${localStorage.getItem("enemy-hp") || 0}`,
+			}),
+			createElement("p", {
+				id: "enemy-fight-attack",
+				textContent:
+					"Angrepsstyrke: " +
+					`${localStorage.getItem("enemy-attack") || 0}`,
+			}),
+		]
 	);
-	createBattleCard(
-		"enemy-fight-display",
-		"Fiende",
-		"enemy-img",
-		"enemy-name",
-		"enemy-hp",
-		"enemy-attack"
-	);
-	// Beregn og vis kampresultatet
-	const { characterHP, enemyHP } = calculateRemainingHP();
-	if (characterHP > enemyHP) {
+	battleArea.insertBefore(enemyCard, fightBtn);
+}
+
+// Funksjon for å annonsere vinneren av kampen
+function determineWinner() {
+	// Hent data fra localStorage, konverter til tall og beregn gjenværende HP
+	const remainingCharacterHP =
+		(parseInt(localStorage.getItem("character-hp")) || 0) -
+		(parseInt(localStorage.getItem("enemy-attack")) || 0);
+	const remainingEnemyHP =
+		(parseInt(localStorage.getItem("enemy-hp")) || 0) -
+		(parseInt(localStorage.getItem("character-attack")) || 0);
+	// Oppdater DOM med resultatet basert på mest HP
+	if (remainingCharacterHP > remainingEnemyHP) {
 		battleResult.textContent = "Du vant!";
-	} else if (enemyHP > characterHP) {
+	} else if (remainingEnemyHP > remainingCharacterHP) {
 		battleResult.textContent = "Du tapte!";
 	} else {
 		battleResult.textContent = "Uavgjort!";
 	}
+}
+
+// Funksjon for å kjøre en kamp
+function startBattle() {
+	// Fjern/overskriv eventuelle tidligere motstandere
+	document
+		.querySelectorAll(".profile-card")
+		.forEach((profileCard) => profileCard.remove());
+	// Opprett kampkort for aktuelle motstandere
+	createCharacterCard();
+	createEnemyCard();
+	// Vis kampresultatet
+	determineWinner();
 }
 
 // Kjør en kamp ved trykk på knappen
