@@ -57,6 +57,14 @@ profileImgs.forEach((img) =>
 createCharacterBtn.addEventListener("click", saveCharacterData);
 // Fremhev tidligere valgt bilde ved oppdatering av siden
 window.addEventListener("load", restoreSelectedImage);
+// Fjern data i input-felter ved oppdatering av siden, hvis localStorage er tom
+window.addEventListener("load", () => {
+	if (!localStorage.length) {
+		document
+			.querySelectorAll("input")
+			.forEach((input) => (input.value = ""));
+	}
+});
 
 // ==================== DEL 2: GENERER FIENDE ====================
 
