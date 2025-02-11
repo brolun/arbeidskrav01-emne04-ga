@@ -1,10 +1,3 @@
-// Her kan du skrive testene dine
-
-// Lage karakter: Test at karakteren blir opprettet med riktige verdier.
-// Generere fiende: Test at fienden blir generert med de riktige verdiene.
-// Kampresultat: Test at kampen viser riktig resultat basert på HP.
-// Lagring i localStorage: Test at både karakteren og fienden blir lagret riktig i localStorage.
-
 // ==================== DEL 4: TESTING ====================
 
 // Mulighet for å kjøre flere tester i samme dokument
